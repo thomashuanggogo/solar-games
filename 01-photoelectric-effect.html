@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>太陽能01・光電效應實驗室</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh;display:flex;flex-direction:column;color:#e8eefc;
+background:radial-gradient(1200px 600px at 20% -10%,#1b2450 0%,#0a0e1f 55%,#070b18 100%)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+background-image:linear-gradient(rgba(120,140,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,140,255,.05) 1px,transparent 1px);
+background-size:44px 44px}
+header{padding:14px 18px;display:flex;align-items:center;gap:8px;z-index:1}
+header h1{font-size:1.12rem;flex:1;text-shadow:0 0 18px rgba(34,211,238,.5)}
+header p{font-size:.78rem;color:#8fa0c8}
+.hbtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:10px 12px;font-size:.95rem;cursor:pointer;min-height:44px;white-space:nowrap}
+#tasks{display:flex;gap:10px;padding:4px 14px 12px;flex-wrap:wrap;z-index:1}
+.task{flex:1;min-width:170px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:11px 12px;font-size:.84rem;backdrop-filter:blur(4px);transition:all .3s;line-height:1.55}
+.task.done{border-color:#4caf7d;background:rgba(76,175,80,.12);box-shadow:0 0 16px rgba(76,175,80,.35)}
+.task .box{margin-right:6px}
+#main{flex:1;display:flex;gap:12px;padding:0 14px 12px;min-height:0;z-index:1}
+.panel{background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:16px;padding:14px;flex:1;display:flex;flex-direction:column;min-width:0;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.panel h2{font-size:.9rem;color:#8fa0c8;margin-bottom:8px;letter-spacing:.05em}
+#stage{position:relative;flex:1;min-height:280px;background:rgba(5,8,20,.7);border-radius:10px;border:1px solid rgba(120,140,255,.14);overflow:hidden}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+#readout{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ro{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.ro .v{font-size:1.25rem;font-weight:800;color:#ffd54f;text-shadow:0 0 10px rgba(255,213,79,.5)}
+.ro .l{font-size:.75rem;color:#8fa0c8;margin-top:2px}
+.ro .v.no{color:#5a6a8f;text-shadow:none}
+#ladder{display:flex;align-items:flex-end;gap:0;height:170px;margin-top:6px;position:relative}
+#ladder .bar{flex:1;text-align:center;font-size:.72rem;color:#8fa0c8;padding-bottom:4px;border-top:3px solid #3d4c78;position:relative;transition:all .3s}
+#ladder .bar .en{position:absolute;top:-20px;left:0;right:0;font-size:.72rem;color:#cdd6ff}
+#ladder .bar.hit{border-top-color:#4caf7d}
+#ladder .bar.hit .en{color:#4caf7d;font-weight:800}
+#ladder .wl{position:absolute;left:0;right:0;border-top:2px dashed #ffd54f;pointer-events:none}
+#ladder .wl span{position:absolute;right:2px;top:-20px;font-size:.72rem;color:#ffd54f;background:rgba(5,8,20,.8);padding:1px 6px;border-radius:6px}
+#controls{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;z-index:1}
+#sliderRow{display:flex;align-items:center;gap:12px;background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:14px;padding:10px 16px}
+#sliderRow label{white-space:nowrap;font-weight:800;color:#cdd6ff;font-size:.9rem}
+#wl{flex:1;-webkit-appearance:none;height:10px;border-radius:99px;background:linear-gradient(90deg,#8b5cf6,#3b82f6,#22d3ee,#4ade80,#facc15,#fb923c,#ef4444);outline:none}
+#wl::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #22d3ee;box-shadow:0 0 14px rgba(34,211,238,.8);cursor:pointer}
+#wl::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid #22d3ee;cursor:pointer}
+#wlVal{font-size:1.15rem;font-weight:800;min-width:92px;text-align:right;color:#ffd54f}
+#howto,#concept,#win{display:none;position:fixed;inset:0;background:rgba(4,6,16,.88);align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(4px);padding:18px}
+#howto.show,#concept.show,#win.show{display:flex;animation:fadeIn .35s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:linear-gradient(160deg,#1c2450,#10162e);border:1px solid rgba(120,140,255,.35);border-radius:20px;padding:26px;max-width:430px;width:100%;box-shadow:0 0 50px rgba(74,108,247,.45);max-height:86vh;overflow-y:auto}
+.card h2{font-size:1.25rem;margin-bottom:10px}
+.card h3{font-size:.95rem;color:#22d3ee;margin:14px 0 6px}
+.card li{font-size:.9rem;line-height:1.7;color:#cdd6ff;margin-left:20px;margin-bottom:4px}
+.card p{font-size:.9rem;line-height:1.75;color:#cdd6ff;margin-bottom:8px}
+.card .goal{color:#ffe082}
+.card .formula{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);border-radius:10px;padding:10px;text-align:center;font-size:1.05rem;font-weight:800;color:#22d3ee;margin:10px 0}
+.bigbtn{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,#4a6cf7,#7a5cf5);color:#fff;border:0;border-radius:12px;padding:15px;font-size:1.08rem;font-weight:800;cursor:pointer;box-shadow:0 0 20px rgba(74,108,247,.5);min-height:54px}
+@media (max-width:760px){#main{flex-direction:column}#readout{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div><h1>☀️ 太陽能01・光電效應實驗室</h1><p>拖波長滑桿，看什麼顏色的光打得出電子</p></div><button class="hbtn" onclick="toggleConcept()">💡 概念</button><button class="hbtn" id="sndBtn" onclick="toggleSnd()">🔊</button></header>
+<div id="tasks">
+<div class="task" id="t1"><span class="box">☐</span>任務一：用 650nm 紅光照射，看看發生什麼事</div>
+<div class="task" id="t2"><span class="box">☐</span>任務二：換 450nm 藍光，量出電子最大動能</div>
+<div class="task" id="t3"><span class="box">☐</span>任務三：找出極限波長（剛好打得出的最長波長，誤差±10nm）</div>
+</div>
+<div id="main">
+<div class="panel"><h2>🔬 實驗桌（光子 → 金屬板）</h2><div id="stage"><canvas id="cv"></canvas></div>
+<div id="readout">
+<div class="ro"><div class="v" id="rE">–</div><div class="l">光子能量 E (eV)</div></div>
+<div class="ro"><div class="v no" id="rEk">–</div><div class="l">電子最大動能 (eV)</div></div>
+</div></div>
+<div class="panel"><h2>📊 能量階梯（光子能量 vs 功函數 2.3 eV）</h2><div id="ladder"></div>
+<p style="font-size:.8rem;color:#8fa0c8;margin-top:10px;line-height:1.7">💡 光子能量超過金屬的功函數（2.3 eV）才能打出電子；多餘的能量變成電子的動能。按右上 💡 看完整概念。</p></div>
+</div>
+<div id="controls">
+<div id="sliderRow"><label>波長 λ</label><input type="range" id="wl" min="380" max="750" step="5" value="650" oninput="update()"><span id="wlVal">650 nm</span></div>
+</div>
+<div id="howto"><div class="card">
+<h2>☀️ 太陽能01・光電效應實驗室</h2>
+<h3>怎麼玩</h3>
+<ul>
+<li>拖曳滑桿改變照射光的波長（380～750nm，可見光範圍）</li>
+<li>看左邊實驗桌：光子飛向金屬板，有沒有電子被打出</li>
+<li>右邊能量階梯即時顯示光子能量 vs 功函數</li>
+<li>任務三要你親手找出「極限波長」</li>
+</ul>
+<h3 class="goal">過關條件</h3>
+<p class="goal">完成 3 個任務：紅光觀察 → 藍光量動能 → 找出極限波長（±10nm）</p>
+<button class="bigbtn" onclick="startGame()">開始遊戲 →</button>
+</div></div>
+<div id="concept"><div class="card">
+<h2>💡 概念：光電效應</h2>
+<p>1905 年，愛因斯坦為了解釋這個實驗提出了光子說，因此拿到諾貝爾物理獎。重點只有三個：</p>
+<h3>1. 光是粒子</h3>
+<p>光由一顆顆「光子」組成，每顆光子的能量只跟頻率（顏色）有關，跟亮度無關：</p>
+<div class="formula">E = hf = hc/λ</div>
+<p>波長越短（越偏藍紫），光子能量越高。用電子伏特算很方便：<b>E(eV) ≈ 1240 / λ(nm)</b>。</p>
+<h3>2. 打出電子要門票</h3>
+<p>金屬裡的電子被束縛著，要逃出來得先付「功函數 W」這張門票（鉀約 2.3 eV）。光子能量不夠 → <b>一個電子都打不出來，再亮也沒用</b>。這是波動說解釋不了的關鍵證據。</p>
+<h3>3. 多的能量變動能</h3>
+<div class="formula">電子最大動能 Ek = E − W</div>
+<p>光子能量超過門票，多出來的就變成電子的動能。所以藍光打出的電子比紅光快——<b>動能只跟顏色有關，跟亮度無關</b>；亮度只決定每秒打出幾個電子（電流大小）。</p>
+<h3>極限波長</h3>
+<p>剛好打得出的最長波長：λ₀ = 1240 / W。鉀的 W=2.3 eV → λ₀ ≈ 539nm。比它更長（更紅）的光永遠打不出電子。</p>
+<button class="bigbtn" onclick="toggleConcept()">知道了</button>
+</div></div>
+<div id="win"><div class="card" style="text-align:center"><h2>🎉 過關！</h2><p>你親手驗證了光電效應：能量不夠再亮也沒用，顏色才決定一切。這就是太陽能電池的第一課。</p><button class="bigbtn" onclick="location.reload()">🔄 再玩一次</button></div></div>
+<script>
+var WL=650, W=2.3; // 功函數 eV（鉀）
+var done={t1:false,t2:false,t3:false};
+var muted=false, AC=null;
+var photons=[], electrons=[], pTimer=0;
+function $(id){return document.getElementById(id);}
+/* 音效 */
+function beep(f,d,type,v,delay){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();var t=AC.currentTime+(delay||0);var o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
+function sndClick(){beep(520,0.07,'square',0.06);}
+function sndTask(){beep(660,0.12,'sine',0.14);beep(880,0.16,'sine',0.14,0.11);}
+function sndWin(){[523,659,784,1047,1319].forEach(function(f,i){beep(f,0.28,'triangle',0.16,i*0.13);});}
+function toggleSnd(){muted=!muted;$('sndBtn').textContent=muted?'🔇':'🔊';if(!muted)sndClick();}
+function toggleConcept(){var c=$('concept');c.classList.toggle('show');sndClick();}
+function confetti(){var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:99';document.body.appendChild(c);var x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;var colors=['#22d3ee','#ffd54f','#4a6cf7','#f472b6','#4caf7d'],ps=[];for(var i=0;i<140;i++)ps.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*0.4,w:6+Math.random()*6,h:8+Math.random()*8,c:colors[i%5],vy:2+Math.random()*3.2,vx:-1.6+Math.random()*3.2,r:Math.random()*6.28,vr:-0.12+Math.random()*0.24});var t=0;(function anim(){x.clearRect(0,0,c.width,c.height);ps.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();});if(++t<260)requestAnimationFrame(anim);else c.remove();})();}
+/* 物理 */
+function photonE(){return 1240/WL;}
+function canEmit(){return photonE()>W;}
+function eKin(){return Math.max(0,photonE()-W);}
+function wlColor(w){ // 波長→顏色（簡化）
+  if(w<440)return '#8b5cf6'; if(w<490)return '#3b82f6'; if(w<510)return '#22d3ee';
+  if(w<580)return '#4ade80'; if(w<645)return '#facc15'; return '#ef4444';
+}
+/* 能量階梯 */
+function drawLadder(){
+  var E=photonE(), el=$('ladder'), h='';
+  var marks=[380,450,539,650,750];
+  marks.forEach(function(w){
+    var e=1240/w, hit=e>W;
+    h+='<div class="bar'+(hit?' hit':'')+'"><span class="en">'+e.toFixed(2)+'eV</span>'+w+'nm</div>';
+  });
+  var pct=(750-WL)/(750-380)*100;
+  h+='<div class="wl" style="top:'+(170- (E/3.5)*150 - 24)+'px"><span>你：'+E.toFixed(2)+'eV</span></div>';
+  el.innerHTML=h;
+}
+/* 動畫 */
+var cv, ctx, CW=0, CH=0;
+function sizeCv(){var r=$('stage').getBoundingClientRect();CW=r.width;CH=r.height;var dpr=window.devicePixelRatio||1;cv.width=CW*dpr;cv.height=CH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+function spawnPhoton(){
+  photons.push({x:-12, y:CH*0.42+ (Math.random()-0.5)*60, hit:false});
+}
+function loop(){
+  ctx.clearRect(0,0,CW,CH);
+  var mx=CW*0.55;
+  // 金屬板
+  ctx.fillStyle='#2a3358';ctx.fillRect(mx,CH*0.15,26,CH*0.7);
+  ctx.fillStyle='#8fa0c8';ctx.font='12px sans-serif';ctx.fillText('金屬板',mx-8,CH*0.13);
+  ctx.fillStyle='#5a6a8f';ctx.font='11px sans-serif';ctx.fillText('W=2.3eV',mx-10,CH*0.92);
+  // 光子
+  var col=wlColor(WL);
+  photons.forEach(function(p){
+    ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(p.x,p.y,7,0,7);ctx.fill();ctx.shadowBlur=0;
+  });
+  // 電子
+  electrons.forEach(function(e){
+    ctx.fillStyle='#22d3ee';ctx.shadowColor='#22d3ee';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(e.x,e.y,5,0,7);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#0a0e1f';ctx.font='bold 8px sans-serif';ctx.fillText('e⁻',e.x-6,e.y+3);
+  });
+  // 更新
+  if(Math.random()<0.12&&photons.length<8)spawnPhoton();
+  var emit=canEmit(), Ek=eKin();
+  photons=photons.filter(function(p){
+    p.x+=5;
+    if(p.x>=mx&&!p.hit){p.hit=true;
+      if(emit){var sp=2+Math.sqrt(Ek)*4;electrons.push({x:mx+30,y:p.y,vx:sp});beep(700+Ek*300,0.08,'sine',0.07);}
+      else beep(220,0.1,'sine',0.05);
+      return false;}
+    return p.x<CW+20;
+  });
+  electrons=electrons.filter(function(e){e.x+=e.vx;return e.x<CW+20;});
+  requestAnimationFrame(loop);
+}
+function checkTasks(){
+  var E=photonE(), changed=false;
+  if(!done.t1&&WL===650){done.t1=true;mark('t1');changed=true;}
+  if(!done.t2&&WL===450&&canEmit()){done.t2=true;mark('t2');changed=true;}
+  if(!done.t3&&Math.abs(WL-539)<=10){done.t3=true;mark('t3');changed=true;}
+  if(changed)sndTask();
+  if(done.t1&&done.t2&&done.t3&&!$('win').classList.contains('show')){
+    $('win').classList.add('show');sndWin();confetti();
+    try{parent.postMessage({levelClear:'solar1'},'*');}catch(e){}
+  }
+}
+function mark(t){var el=$(t);el.classList.add('done');el.querySelector('.box').textContent='☑';}
+function update(){
+  WL=parseInt($('wl').value);
+  $('wlVal').textContent=WL+' nm';
+  var E=photonE(), emit=canEmit(), Ek=eKin();
+  $('rE').textContent=E.toFixed(2);
+  $('rE').className='v';
+  var rEk=$('rEk');
+  if(emit){rEk.textContent=Ek.toFixed(2);rEk.className='v';}
+  else{rEk.textContent='打不出';rEk.className='v no';}
+  drawLadder();checkTasks();
+}
+function startGame(){$('howto').classList.remove('show');sndClick();}
+function back(){location.reload();}
+cv=$('cv');ctx=cv.getContext('2d');
+sizeCv();window.addEventListener('resize',sizeCv);
+$('howto').classList.add('show');
+update();loop();
+</script>
+</body>
+</html>

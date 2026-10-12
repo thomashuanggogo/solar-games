@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>太陽能03・最大功率點追蹤</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh;display:flex;flex-direction:column;color:#e8eefc;
+background:radial-gradient(1200px 600px at 20% -10%,#1b2450 0%,#0a0e1f 55%,#070b18 100%)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+background-image:linear-gradient(rgba(120,140,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,140,255,.05) 1px,transparent 1px);
+background-size:44px 44px}
+header{padding:14px 18px;display:flex;align-items:center;gap:8px;z-index:1}
+header h1{font-size:1.12rem;flex:1;text-shadow:0 0 18px rgba(34,211,238,.5)}
+header p{font-size:.78rem;color:#8fa0c8}
+.hbtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:10px 12px;font-size:.95rem;cursor:pointer;min-height:44px;white-space:nowrap}
+#tasks{display:flex;gap:10px;padding:4px 14px 12px;flex-wrap:wrap;z-index:1}
+.task{flex:1;min-width:170px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:11px 12px;font-size:.84rem;backdrop-filter:blur(4px);transition:all .3s;line-height:1.55}
+.task.done{border-color:#4caf7d;background:rgba(76,175,80,.12);box-shadow:0 0 16px rgba(76,175,80,.35)}
+.task .box{margin-right:6px}
+#main{flex:1;display:flex;gap:12px;padding:0 14px 12px;min-height:0;z-index:1}
+.panel{background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:16px;padding:14px;flex:1;display:flex;flex-direction:column;min-width:0;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.panel h2{font-size:.9rem;color:#8fa0c8;margin-bottom:8px;letter-spacing:.05em}
+#cv{width:100%;height:260px;background:rgba(5,8,20,.7);border-radius:10px;border:1px solid rgba(120,140,255,.14)}
+#readout{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ro{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.ro .v{font-size:1.3rem;font-weight:800;color:#ffd54f;text-shadow:0 0 10px rgba(255,213,79,.5)}
+.ro .l{font-size:.72rem;color:#8fa0c8;margin-top:2px}
+#hint{min-height:30px;text-align:center;font-weight:700;margin-top:10px;font-size:.92rem}
+#lockBtn{display:block;width:100%;margin-top:8px;background:linear-gradient(135deg,#4a6cf7,#7a5cf5);color:#fff;border:0;border-radius:12px;padding:15px;font-size:1.05rem;font-weight:800;cursor:pointer;box-shadow:0 0 20px rgba(74,108,247,.5);min-height:54px}
+#lockBtn:disabled{opacity:.4;box-shadow:none}
+#roundInfo{text-align:center;font-size:.95rem;font-weight:800;color:#cdd6ff;margin-bottom:6px}
+#roundInfo b{color:#ffd54f}
+#controls{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;z-index:1}
+#sliderRow{display:flex;align-items:center;gap:12px;background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:14px;padding:10px 16px}
+#sliderRow label{white-space:nowrap;font-weight:800;color:#cdd6ff;font-size:.9rem}
+#vv{flex:1;-webkit-appearance:none;height:10px;border-radius:99px;background:linear-gradient(90deg,#4a6cf7,#22d3ee);outline:none}
+#vv::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #22d3ee;box-shadow:0 0 14px rgba(34,211,238,.8);cursor:pointer}
+#vv::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid #22d3ee;cursor:pointer}
+#vvVal{font-size:1.15rem;font-weight:800;min-width:92px;text-align:right;color:#ffd54f}
+#howto,#concept,#win{display:none;position:fixed;inset:0;background:rgba(4,6,16,.88);align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(4px);padding:18px}
+#howto.show,#concept.show,#win.show{display:flex;animation:fadeIn .35s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:linear-gradient(160deg,#1c2450,#10162e);border:1px solid rgba(120,140,255,.35);border-radius:20px;padding:26px;max-width:430px;width:100%;box-shadow:0 0 50px rgba(74,108,247,.45);max-height:86vh;overflow-y:auto}
+.card h2{font-size:1.25rem;margin-bottom:10px}
+.card h3{font-size:.95rem;color:#22d3ee;margin:14px 0 6px}
+.card li{font-size:.9rem;line-height:1.7;color:#cdd6ff;margin-left:20px;margin-bottom:4px}
+.card p{font-size:.9rem;line-height:1.75;color:#cdd6ff;margin-bottom:8px}
+.card .goal{color:#ffe082}
+.card .formula{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);border-radius:10px;padding:10px;text-align:center;font-size:1.02rem;font-weight:800;color:#22d3ee;margin:10px 0}
+.bigbtn{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,#4a6cf7,#7a5cf5);color:#fff;border:0;border-radius:12px;padding:15px;font-size:1.08rem;font-weight:800;cursor:pointer;box-shadow:0 0 20px rgba(74,108,247,.5);min-height:54px}
+@media (max-width:760px){#main{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div><h1>☀️ 太陽能03・最大功率點追蹤</h1><p>拉負載滑桿，在 I-V 曲線上找到功率最大的點</p></div><button class="hbtn" onclick="toggleConcept()">💡 概念</button><button class="hbtn" id="sndBtn" onclick="toggleSnd()">🔊</button></header>
+<div id="tasks">
+<div class="task" id="t1"><span class="box">☐</span>第 1 輪：找到最大功率點（誤差 ±3%）</div>
+<div class="task" id="t2"><span class="box">☐</span>第 2 輪：換一塊電池，再找一次</div>
+<div class="task" id="t3"><span class="box">☐</span>第 3 輪：最後一塊，最難的</div>
+</div>
+<div id="main">
+<div class="panel"><h2>📈 I-V 曲線（陰影矩形＝輸出功率）</h2><canvas id="cv"></canvas></div>
+<div class="panel"><h2>🎛️ 控制</h2>
+<div id="roundInfo">第 <b>1</b> / 3 輪</div>
+<div id="readout">
+<div class="ro"><div class="v" id="rP">–</div><div class="l">目前功率 P (W)</div></div>
+<div class="ro"><div class="v" id="rV">–</div><div class="l">工作電壓 V (V)</div></div>
+</div>
+<div id="hint"></div>
+<button id="lockBtn" onclick="lock()">⚡ 鎖定這個功率點</button>
+<p style="font-size:.8rem;color:#8fa0c8;margin-top:10px;line-height:1.7">💡 兩端功率都是 0：短路（V=0）沒電壓，開路（I=0）沒電流。最大值藏在中間某處。</p></div>
+</div>
+<div id="controls">
+<div id="sliderRow"><label>負載（工作電壓 V）</label><input type="range" id="vv" min="0" max="100" step="0.5" value="50" oninput="update()"><span id="vvVal">–</span></div>
+</div>
+<div id="howto"><div class="card">
+<h2>☀️ 太陽能03・最大功率點追蹤</h2>
+<h3>怎麼玩</h3>
+<ul>
+<li>拖曳滑桿改變工作電壓，工作點會在 I-V 曲線上滑動</li>
+<li>陰影矩形的面積就是輸出功率，越大越好</li>
+<li>覺得找到最大值了，按「⚡ 鎖定這個功率點」</li>
+<li>誤差 ±3% 內算命中，進入下一輪（共 3 輪，電池越來越難）</li>
+</ul>
+<h3 class="goal">過關條件</h3>
+<p class="goal">3 輪都命中最大功率點</p>
+<button class="bigbtn" onclick="startGame()">開始遊戲 →</button>
+</div></div>
+<div id="concept"><div class="card">
+<h2>💡 概念：最大功率點與填充因子</h2>
+<h3>1. 兩端都是零</h3>
+<p>太陽能電池有兩個極端：<b>短路</b>（電壓=0，電流最大 Isc）跟<b>開路</b>（電流=0，電壓最大 Voc）。功率 P = V × I，所以兩端功率都是 0——最大值一定藏在中間某處。</p>
+<h3>2. 最大功率點 (MPP)</h3>
+<p>在 I-V 曲線上找到讓 V × I 最大的那個點，就是最大功率點。真實的太陽能系統裡有個叫 <b>MPPT（最大功率點追蹤）</b> 的電路，整天都在做你剛剛做的事：雲飄過、溫度變了，它就重新找一次。</p>
+<h3>3. 填充因子 Fill Factor</h3>
+<div class="formula">FF = Pmax / (Isc × Voc)</div>
+<p>衡量電池品質的指標：I-V 曲線越「方」，FF 越高。好電池 FF 可達 0.85，意思是曲線幾乎撐滿整個矩形。</p>
+<h3>跟上一關的關係</h3>
+<p>上一關的「能隙」決定了 Isc 和 Voc 的理論上限（Shockley-Queisser）；這一關是在既定的 I-V 曲線上，把實際功率榨到最大。兩關加起來，就是太陽能電池的完整故事。</p>
+<button class="bigbtn" onclick="toggleConcept()">知道了</button>
+</div></div>
+<div id="win"><div class="card" style="text-align:center"><h2>🎉 過關！</h2><p>三輪全中！你剛剛做的就是 MPPT 電路每天在做的事——太陽能三連關全部完成 ☀️</p><button class="bigbtn" onclick="location.reload()">🔄 再玩一次</button></div></div>
+<script>
+var ROUNDS=[{isc:8,voc:36},{isc:5,voc:48},{isc:10,voc:30}];
+var round=0, V=0, locked=false;
+var muted=false, AC=null;
+function $(id){return document.getElementById(id);}
+function beep(f,d,type,v,delay){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();var t=AC.currentTime+(delay||0);var o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
+function sndClick(){beep(520,0.07,'square',0.06);}
+function sndTask(){beep(660,0.12,'sine',0.14);beep(880,0.16,'sine',0.14,0.11);}
+function sndWin(){[523,659,784,1047,1319].forEach(function(f,i){beep(f,0.28,'triangle',0.16,i*0.13);});}
+function sndBad(){beep(200,0.2,'sawtooth',0.1);}
+function toggleSnd(){muted=!muted;$('sndBtn').textContent=muted?'🔇':'🔊';if(!muted)sndClick();}
+function toggleConcept(){var c=$('concept');c.classList.toggle('show');sndClick();}
+function confetti(){var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:99';document.body.appendChild(c);var x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;var colors=['#22d3ee','#ffd54f','#4a6cf7','#f472b6','#4caf7d'],ps=[];for(var i=0;i<140;i++)ps.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*0.4,w:6+Math.random()*6,h:8+Math.random()*8,c:colors[i%5],vy:2+Math.random()*3.2,vx:-1.6+Math.random()*3.2,r:Math.random()*6.28,vr:-0.12+Math.random()*0.24});var t=0;(function anim(){x.clearRect(0,0,c.width,c.height);ps.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();});if(++t<260)requestAnimationFrame(anim);else c.remove();})();}
+/* 物理：簡化 I-V */
+function cur(){return ROUNDS[round];}
+function Iv(v){var c=cur();if(v<0)return c.isc;if(v>c.voc)return 0;return c.isc*(1-Math.pow(v/c.voc,3));}
+function Pmax(){var c=cur(),best=0;for(var v=0;v<=c.voc;v+=c.voc/500){var p=v*Iv(v);if(p>best)best=p;}return best;}
+var cv, ctx;
+function sizeCv(){var r=$('cv').getBoundingClientRect();var dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=260*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+function draw(){
+  var c=cur(), r=$('cv').getBoundingClientRect(), Wd=r.width, Ht=260;
+  var pl=44,pb=30,pt=12,pr=12;
+  ctx.clearRect(0,0,Wd,Ht);
+  function X(v){return pl+v/c.voc*(Wd-pl-pr);}
+  function Y(i){return Ht-pb-i/c.isc*(Ht-pt-pb);}
+  // 功率矩形
+  var i=Iv(V), p=V*i;
+  ctx.fillStyle='rgba(74,222,128,.18)';
+  ctx.fillRect(X(0),Y(i),X(V)-X(0),Y(0)-Y(i));
+  // 座標軸
+  ctx.strokeStyle='rgba(120,140,255,.35)';ctx.fillStyle='#8fa0c8';ctx.font='11px sans-serif';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,Ht-pb);ctx.lineTo(Wd-pr,Ht-pb);ctx.stroke();
+  ctx.fillText('I(A)',6,14);ctx.fillText('V(V)→',Wd-44,Ht-8);
+  ctx.fillText('Isc='+c.isc+'A',6,Y(c.isc)+4);
+  ctx.fillText('Voc='+c.voc+'V',X(c.voc)-52,Ht-12);
+  // I-V 曲線
+  ctx.strokeStyle='#22d3ee';ctx.lineWidth=3;ctx.shadowColor='#22d3ee';ctx.shadowBlur=8;
+  ctx.beginPath();
+  for(var v=0;v<=c.voc;v+=c.voc/200){var px=X(v),py=Y(Iv(v));v===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+  ctx.stroke();ctx.shadowBlur=0;
+  // 工作點
+  var qx=X(V),qy=Y(i);
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(qx,qy,7,0,7);ctx.fill();
+  ctx.strokeStyle='#ffd54f';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(qx,qy,11,0,7);ctx.stroke();
+  ctx.fillStyle='#ffe082';ctx.font='bold 12px sans-serif';
+  ctx.fillText('P='+p.toFixed(1)+'W',Math.min(qx+14,Wd-80),Math.max(qy-12,14));
+}
+function mark(t){var el=$('t'+t);el.classList.add('done');el.querySelector('.box').textContent='☑';}
+function update(){
+  var c=cur();
+  V=parseFloat($('vv').value)/100*c.voc;
+  $('vvVal').textContent=V.toFixed(1)+' V';
+  $('rP').textContent=(V*Iv(V)).toFixed(1);
+  $('rV').textContent=V.toFixed(1);
+  $('hint').textContent='';
+  draw();
+}
+function lock(){
+  var c=cur(), p=V*Iv(V), pm=Pmax(), err=Math.abs(p-pm)/pm;
+  if(err<=0.03){
+    sndTask();mark(round+1);
+    $('hint').innerHTML='<span style="color:#4ade80">✅ 命中！誤差 '+(err*100).toFixed(1)+'%（Pmax='+pm.toFixed(1)+'W）</span>';
+    $('lockBtn').disabled=true;
+    setTimeout(function(){
+      round++;
+      if(round>=3){
+        $('win').classList.add('show');sndWin();confetti();
+        try{parent.postMessage({levelClear:'solar3'},'*');}catch(e){}
+      }else{
+        $('roundInfo').innerHTML='第 <b>'+(round+1)+'</b> / 3 輪';
+        $('vv').value=50;$('lockBtn').disabled=false;update();
+      }
+    },1400);
+  }else{
+    sndBad();
+    $('hint').innerHTML='<span style="color:#f87171">❌ 還差 '+(err*100).toFixed(1)+'%（現在 '+p.toFixed(1)+'W）。提示：'+(V<0.63*c.voc?'電壓太低，往右拉':'電壓太高，往左拉')+'</span>';
+  }
+}
+function startGame(){$('howto').classList.remove('show');sndClick();}
+function back(){location.reload();}
+cv=$('cv');ctx=cv.getContext('2d');
+sizeCv();window.addEventListener('resize',sizeCv);
+$('howto').classList.add('show');
+update();
+</script>
+</body>
+</html>

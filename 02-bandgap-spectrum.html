@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>太陽能02・能隙與太陽光譜</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;min-height:100vh;display:flex;flex-direction:column;color:#e8eefc;
+background:radial-gradient(1200px 600px at 20% -10%,#1b2450 0%,#0a0e1f 55%,#070b18 100%)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+background-image:linear-gradient(rgba(120,140,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,140,255,.05) 1px,transparent 1px);
+background-size:44px 44px}
+header{padding:14px 18px;display:flex;align-items:center;gap:8px;z-index:1}
+header h1{font-size:1.12rem;flex:1;text-shadow:0 0 18px rgba(34,211,238,.5)}
+header p{font-size:.78rem;color:#8fa0c8}
+.hbtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:10px 12px;font-size:.95rem;cursor:pointer;min-height:44px;white-space:nowrap}
+#tasks{display:flex;gap:10px;padding:4px 14px 12px;flex-wrap:wrap;z-index:1}
+.task{flex:1;min-width:170px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:11px 12px;font-size:.84rem;backdrop-filter:blur(4px);transition:all .3s;line-height:1.55}
+.task.done{border-color:#4caf7d;background:rgba(76,175,80,.12);box-shadow:0 0 16px rgba(76,175,80,.35)}
+.task .box{margin-right:6px}
+#main{flex:1;display:flex;gap:12px;padding:0 14px 12px;min-height:0;z-index:1}
+.panel{background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:16px;padding:14px;flex:1;display:flex;flex-direction:column;min-width:0;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.panel h2{font-size:.9rem;color:#8fa0c8;margin-bottom:8px;letter-spacing:.05em}
+#spec{flex:1;min-height:200px;position:relative;background:rgba(5,8,20,.7);border-radius:10px;border:1px solid rgba(120,140,255,.14);overflow:hidden}
+#spec canvas{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:.78rem;color:#8fa0c8}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+#nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.num{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.num .v{font-size:1.3rem;font-weight:800}
+.num .l{font-size:.72rem;color:#8fa0c8;margin-top:2px}
+#effV{color:#4ade80;text-shadow:0 0 10px rgba(74,222,128,.5)}
+#passV{color:#5a6a8f}
+#heatV{color:#facc15}
+#best{margin-top:10px;font-size:.85rem;color:#8fa0c8;line-height:1.7;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.25);border-radius:10px;padding:10px}
+#best b{color:#4ade80}
+#controls{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;z-index:1}
+#sliderRow{display:flex;align-items:center;gap:12px;background:rgba(16,22,48,.75);border:1px solid rgba(120,140,255,.18);border-radius:14px;padding:10px 16px}
+#sliderRow label{white-space:nowrap;font-weight:800;color:#cdd6ff;font-size:.9rem}
+#eg{flex:1;-webkit-appearance:none;height:10px;border-radius:99px;background:linear-gradient(90deg,#4a6cf7,#22d3ee);outline:none}
+#eg::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid #22d3ee;box-shadow:0 0 14px rgba(34,211,238,.8);cursor:pointer}
+#eg::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid #22d3ee;cursor:pointer}
+#egVal{font-size:1.15rem;font-weight:800;min-width:96px;text-align:right;color:#ffd54f}
+#howto,#concept,#win{display:none;position:fixed;inset:0;background:rgba(4,6,16,.88);align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(4px);padding:18px}
+#howto.show,#concept.show,#win.show{display:flex;animation:fadeIn .35s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:linear-gradient(160deg,#1c2450,#10162e);border:1px solid rgba(120,140,255,.35);border-radius:20px;padding:26px;max-width:430px;width:100%;box-shadow:0 0 50px rgba(74,108,247,.45);max-height:86vh;overflow-y:auto}
+.card h2{font-size:1.25rem;margin-bottom:10px}
+.card h3{font-size:.95rem;color:#22d3ee;margin:14px 0 6px}
+.card li{font-size:.9rem;line-height:1.7;color:#cdd6ff;margin-left:20px;margin-bottom:4px}
+.card p{font-size:.9rem;line-height:1.75;color:#cdd6ff;margin-bottom:8px}
+.card .goal{color:#ffe082}
+.card .formula{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);border-radius:10px;padding:10px;text-align:center;font-size:1.02rem;font-weight:800;color:#22d3ee;margin:10px 0}
+.bigbtn{display:block;width:100%;margin-top:16px;background:linear-gradient(135deg,#4a6cf7,#7a5cf5);color:#fff;border:0;border-radius:12px;padding:15px;font-size:1.08rem;font-weight:800;cursor:pointer;box-shadow:0 0 20px rgba(74,108,247,.5);min-height:54px}
+@media (max-width:760px){#main{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div><h1>☀️ 太陽能02・能隙與太陽光譜</h1><p>拖能隙滑桿，看太陽光被切成三段</p></div><button class="hbtn" onclick="toggleConcept()">💡 概念</button><button class="hbtn" id="sndBtn" onclick="toggleSnd()">🔊</button></header>
+<div id="tasks">
+<div class="task" id="t1"><span class="box">☐</span>任務一：把能隙設為 1.12 eV（矽），記下效率</div>
+<div class="task" id="t2"><span class="box">☐</span>任務二：找出效率最高的那個能隙（效率 ≥ 33%）</div>
+<div class="task" id="t3"><span class="box">☐</span>任務三：把能隙調到 0.6 eV，看看效率為什麼反而掉下來</div>
+</div>
+<div id="main">
+<div class="panel"><h2>🌈 太陽光譜（300～2500nm）</h2><div id="spec"><canvas id="cv"></canvas></div>
+<div class="legend"><span><i class="dot" style="background:#4ade80"></i>變成電</span><span><i class="dot" style="background:#facc15"></i>變成熱浪費</span><span><i class="dot" style="background:#3d4c78"></i>直接穿過</span></div></div>
+<div class="panel"><h2>📊 能量去向</h2>
+<div id="nums">
+<div class="num"><div class="v" id="effV">–</div><div class="l">變成電 ⚡</div></div>
+<div class="num"><div class="v" id="heatV">–</div><div class="l">變熱浪費 🔥</div></div>
+<div class="num"><div class="v" id="passV">–</div><div class="l">直接穿過 👻</div></div>
+</div>
+<div id="best">🏆 目前最佳：<b id="bestV">–</b><br><span style="font-size:.78rem">提示：能隙太大浪費長波，太小浪費高能光子的多餘能量，中間有個甜蜜點。</span></div>
+<p style="font-size:.8rem;color:#8fa0c8;margin-top:10px;line-height:1.7">💡 這就是太陽能電池的終極限制：單一能隙再怎麼調，效率都有天花板（約 33%）。按右上 💡 看為什麼。</p></div>
+</div>
+<div id="controls">
+<div id="sliderRow"><label>能隙 Eg</label><input type="range" id="eg" min="0.5" max="3" step="0.02" value="1.12" oninput="update()"><span id="egVal">1.12 eV</span></div>
+</div>
+<div id="howto"><div class="card">
+<h2>☀️ 太陽能02・能隙與太陽光譜</h2>
+<h3>怎麼玩</h3>
+<ul>
+<li>拖曳滑桿改變太陽能電池的「能隙」Eg（0.5～3.0 eV）</li>
+<li>左邊光譜即時被切成三段：變成電（綠）／變熱浪費（黃）／直接穿過（灰）</li>
+<li>右邊顯示三種能量的比例，找出效率最高的那個能隙</li>
+</ul>
+<h3 class="goal">過關條件</h3>
+<p class="goal">完成 3 個任務：看矽的效率 → 找出最佳能隙（≥33%）→ 看小能隙為什麼反而差</p>
+<button class="bigbtn" onclick="startGame()">開始遊戲 →</button>
+</div></div>
+<div id="concept"><div class="card">
+<h2>💡 概念：能隙與 Shockley-Queisser 極限</h2>
+<p>上一關學到：光子能量 ≥ 能隙才能打出電子。但太陽光不是單一顏色的，打出電子後還有效率問題：</p>
+<h3>1. 太弱的直接穿過</h3>
+<p>能量 &lt; Eg 的光子（紅外線）連電子都打不出來，直接穿過電池，貢獻 0。所以<b>能隙太大</b>會浪費一大段長波。</p>
+<h3>2. 太強的多餘變熱</h3>
+<p>能量遠大於 Eg 的光子，打出電子後多餘的能量全部變成熱浪費掉——不管紫外光子能量多高，每個光子最多只貢獻 Eg。所以<b>能隙太小</b>會浪費所有高能光子的精華。另外實際上每個光子還要再扣約 0.35V 的電壓損失（電子電洞複合跑掉），這是本模擬採用的簡化模型。</p>
+<h3>3. 甜蜜點約 1.34 eV</h3>
+<div class="formula">單接面太陽能電池極限 ≈ 33%</div>
+<p>1961 年 Shockley 和 Queisser 算出：單一能隙的電池，效率天花板約 33%，最佳能隙約 1.34 eV。矽的 1.12 eV 離最佳不遠，這也是矽稱霸的原因之一。</p>
+<h3>怎麼突破？</h3>
+<p>疊多層不同能隙的電池（疊層電池）：上層抓高能光子、下層抓低能，效率可超過 40%。這就是現在鈣鈦礦＋矽疊層在做的事。</p>
+<button class="bigbtn" onclick="toggleConcept()">知道了</button>
+</div></div>
+<div id="win"><div class="card" style="text-align:center"><h2>🎉 過關！</h2><p>你找到了太陽能電池的甜蜜點，也懂了為什麼效率有天花板——這可是拿來理解整個太陽能產業的一把鑰匙。</p><button class="bigbtn" onclick="location.reload()">🔄 再玩一次</button></div></div>
+<script>
+var EG=1.12, done={t1:false,t2:false,t3:false}, bestEff=0, bestEg=0;
+var muted=false, AC=null;
+var BINS=48, LAM0=300, LAM1=2500;
+function $(id){return document.getElementById(id);}
+function beep(f,d,type,v,delay){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();var t=AC.currentTime+(delay||0);var o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
+function sndClick(){beep(520,0.07,'square',0.06);}
+function sndTask(){beep(660,0.12,'sine',0.14);beep(880,0.16,'sine',0.14,0.11);}
+function sndWin(){[523,659,784,1047,1319].forEach(function(f,i){beep(f,0.28,'triangle',0.16,i*0.13);});}
+function toggleSnd(){muted=!muted;$('sndBtn').textContent=muted?'🔇':'🔊';if(!muted)sndClick();}
+function toggleConcept(){var c=$('concept');c.classList.toggle('show');sndClick();}
+function confetti(){var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:99';document.body.appendChild(c);var x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;var colors=['#22d3ee','#ffd54f','#4a6cf7','#f472b6','#4caf7d'],ps=[];for(var i=0;i<140;i++)ps.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*0.4,w:6+Math.random()*6,h:8+Math.random()*8,c:colors[i%5],vy:2+Math.random()*3.2,vx:-1.6+Math.random()*3.2,r:Math.random()*6.28,vr:-0.12+Math.random()*0.24});var t=0;(function anim(){x.clearRect(0,0,c.width,c.height);ps.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();});if(++t<260)requestAnimationFrame(anim);else c.remove();})();}
+/* 太陽光譜（普朗克光子通量，T=5800K，離散化） */
+var lam=[], Np=[], Ep=[];
+(function(){
+  var T=5800, C=1.4388e7;
+  for(var i=0;i<BINS;i++){
+    var l=LAM0+(LAM1-LAM0)*(i+0.5)/BINS; lam.push(l);
+    var e=1240/l; Ep.push(e);
+    Np.push(Math.pow(l,-4)/(Math.exp(C/(l*T))-1));
+  }
+})();
+/* 每個被吸收的光子：實際貢獻 Eg 再扣約 0.35V 電壓損失（電子電洞複合），多餘的變熱 */
+var DV=0.35;
+function efficiency(eg){
+  var use=0, tot=0;
+  for(var i=0;i<BINS;i++){
+    var e=Ep[i], n=Np[i];
+    tot+=e*n;
+    if(e>=eg)use+=(eg-DV)*n;
+  }
+  return use/tot;
+}
+function parts(eg){
+  var use=0, heat=0, pass=0, tot=0;
+  for(var i=0;i<BINS;i++){
+    var e=Ep[i], n=Np[i]; tot+=e*n;
+    if(e<eg)pass+=e*n; else{use+=(eg-DV)*n;heat+=(e-eg+DV)*n;}
+  }
+  return {use:use/tot, heat:heat/tot, pass:pass/tot};
+}
+var cv, ctx;
+function sizeCv(){var r=$('spec').getBoundingClientRect();var dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw();}
+function draw(){
+  var r=$('spec').getBoundingClientRect(), Wd=r.width, Ht=r.height;
+  ctx.clearRect(0,0,Wd,Ht);
+  var maxN=Math.max.apply(null,Np);
+  var bw=Wd/BINS;
+  for(var i=0;i<BINS;i++){
+    var e=Ep[i], hgt=(Np[i]/maxN)*(Ht-46);
+    var x=i*bw, y=Ht-30-hgt;
+    if(e<EG){ctx.fillStyle='rgba(90,106,143,.55)';ctx.fillRect(x+1,y,bw-2,hgt);}
+    else{
+      var frac=Math.max(0,(EG-DV)/e); // 綠色比例
+      ctx.fillStyle='#facc15';ctx.fillRect(x+1,y,bw-2,hgt);
+      ctx.fillStyle='#4ade80';ctx.fillRect(x+1,y+hgt*(1-frac),bw-2,hgt*frac);
+    }
+  }
+  // 能隙截止線
+  var lamCut=1240/EG;
+  if(lamCut>LAM0&&lamCut<LAM1){
+    var cx=(lamCut-LAM0)/(LAM1-LAM0)*Wd;
+    ctx.strokeStyle='#fff';ctx.setLineDash([5,4]);ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx,6);ctx.lineTo(cx,Ht-30);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#fff';ctx.font='11px sans-serif';
+    ctx.fillText('截止 '+Math.round(lamCut)+'nm',Math.min(cx+4,Wd-78),18);
+  }
+  ctx.fillStyle='#8fa0c8';ctx.font='11px sans-serif';
+  ctx.fillText('300nm',4,Ht-10);ctx.fillText('2500nm',Wd-52,Ht-10);
+}
+function mark(t){var el=$(t);el.classList.add('done');el.querySelector('.box').textContent='☑';}
+function checkTasks(eff){
+  var changed=false;
+  if(!done.t1&&Math.abs(EG-1.12)<=0.03){done.t1=true;mark('t1');changed=true;}
+  if(!done.t2&&eff>=0.33){done.t2=true;mark('t2');changed=true;}
+  if(!done.t3&&EG<=0.62){done.t3=true;mark('t3');changed=true;}
+  if(changed)sndTask();
+  if(done.t1&&done.t2&&done.t3&&!$('win').classList.contains('show')){
+    $('win').classList.add('show');sndWin();confetti();
+    try{parent.postMessage({levelClear:'solar2'},'*');}catch(e){}
+  }
+}
+function update(){
+  EG=parseFloat($('eg').value);
+  $('egVal').textContent=EG.toFixed(2)+' eV';
+  var p=parts(EG), eff=p.use;
+  $('effV').textContent=(eff*100).toFixed(1)+'%';
+  $('heatV').textContent=(p.heat*100).toFixed(1)+'%';
+  $('passV').textContent=(p.pass*100).toFixed(1)+'%';
+  if(eff>bestEff){bestEff=eff;bestEg=EG;}
+  $('bestV').textContent=(bestEff*100).toFixed(1)+'%（Eg='+bestEg.toFixed(2)+'eV）';
+  draw();checkTasks(eff);
+}
+function startGame(){$('howto').classList.remove('show');sndClick();}
+function back(){location.reload();}
+cv=$('cv');ctx=cv.getContext('2d');
+sizeCv();window.addEventListener('resize',sizeCv);
+$('howto').classList.add('show');
+update();
+</script>
+</body>
+</html>
